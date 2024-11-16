@@ -1,10 +1,13 @@
+import 'package:data_strings/src/db/models/answer.dart';
 import 'package:data_strings/src/pages/home.dart';
 import 'package:data_strings/src/question.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
+void main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(AnswerAdapter());
   runApp(const MyApp());
 }
 

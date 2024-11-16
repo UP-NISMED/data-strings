@@ -1,4 +1,5 @@
 import 'package:data_strings/main.dart';
+import 'package:data_strings/src/db/db.dart';
 import 'package:data_strings/src/db/models/answer.dart';
 import 'package:data_strings/src/pages/data_strings.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class QuestionPage extends StatefulWidget {
 
 class _QuestionPageState extends State<QuestionPage> {
   int? _selectedChoice;
+  final AnswerService _answerService = AnswerService();
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +52,18 @@ class _QuestionPageState extends State<QuestionPage> {
               if (_selectedChoice != null) {
                 if (widget.index == questions.length - 1) {
                   final choices = [...widget.answers, _selectedChoice!];
-                  Answer(
-                    firstName: widget.firstName,
-                    lastName: widget.lastName,
-                    choices: choices,
-                  );
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DataStringsPage(
-                                firstName: widget.firstName,
-                                lastName: widget.lastName,
-                              )),
-                      (route) => route.isFirst);
+                  await _answerService.addAnswer(
+                      widget.firstName, widget.lastName, choices);
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => DataStringsPage(
+                                  firstName: widget.firstName,
+                                  lastName: widget.lastName,
+                                )),
+                        (route) => route.isFirst);
+                  }
                   return;
                 }
 
