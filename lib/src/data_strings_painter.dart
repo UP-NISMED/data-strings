@@ -58,7 +58,7 @@ class DataStringsPainter extends CustomPainter {
         textAlign: TextAlign.center,
       );
       questionPainter.layout(maxWidth: columnWidth);
-      questionPainter.paint(canvas, Offset(x - questionPainter.width / 2, 0));
+      questionPainter.paint(canvas, Offset(x - questionPainter.width / 2, 5));
 
       final questionPoints =
           _computeQuestionPoints(questions[i], x, size.height);

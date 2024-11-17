@@ -1,6 +1,5 @@
 import 'package:data_strings/main.dart';
 import 'package:data_strings/src/db/db.dart';
-import 'package:data_strings/src/db/models/answer.dart';
 import 'package:data_strings/src/pages/data_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';

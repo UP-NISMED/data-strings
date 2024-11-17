@@ -21,6 +21,8 @@ class DataStringsPage extends StatefulWidget {
 
 class _DataStringsPageState extends State<DataStringsPage> {
   final AnswerService _answerService = AnswerService();
+  final TextEditingController nameController = TextEditingController();
+  String? selectedName;
 
   Future<ui.Image> _loadBgImage() async {
     final data = await rootBundle.load('assets/bg.png');
@@ -47,38 +49,76 @@ class _DataStringsPageState extends State<DataStringsPage> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFFE9C46A)),
-      body: Column(
-        children: [
-          const Row(children: []),
-          Expanded(
-              child: FutureBuilder(
-                  future: _answerService.getAllAnswers(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+    return FutureBuilder(
+        future: Future.wait([_answerService.getAllAnswers(), _loadBgImage()]),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                    if (snapshot.hasError) {
-                      return const Center(child: Text('Error loading image'));
-                    }
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error loading image'));
+          }
 
-                    return ValueListenableBuilder(
-                        valueListenable:
-                            Hive.box<Answer>('answerBox').listenable(),
-                        builder: (context, box, _) {
-                          final answers = box.values.map((answer) => answer.choices).toList();
-                          return DataStrings(
-                              dataStringData: DataStringsData.create(
+          final [_, bgImage as ui.Image] = snapshot.data!;
+
+          return ValueListenableBuilder(
+              valueListenable: Hive.box<Answer>('answerBox').listenable(),
+              builder: (context, box, _) {
+                final answers = box.values
+                    .where((answer) =>
+                        selectedName ==
+                        '${answer.firstName} ${answer.lastName}')
+                    .map((answer) => answer.choices)
+                    .toList();
+
+                return Scaffold(
+                    appBar: AppBar(
+                      backgroundColor: const Color(0xFFE9C46A),
+                      actions: [
+                        IconButton(
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      SimpleDialog(
+                                          title: const Text('Filter'),
+                                          children: [
+                                            SimpleDialogOption(
+                                              child: DropdownMenu(
+                                                  label: const Text('Name'),
+                                                  controller: nameController,
+                                                  onSelected: (value) {
+                                                    setState(() {
+                                                      selectedName = value;
+                                                    });
+                                                  },
+                                                  dropdownMenuEntries: [
+                                                    const DropdownMenuEntry(
+                                                        value: null,
+                                                        label: 'All'),
+                                                    ...box.values.map((answer) {
+                                                      final fullName =
+                                                          '${answer.firstName} ${answer.lastName}';
+                                                      return DropdownMenuEntry(
+                                                          value: fullName,
+                                                          label: fullName);
+                                                    })
+                                                  ]),
+                                            )
+                                          ]));
+                            },
+                            icon:
+                                const Icon(Icons.settings, color: Colors.white))
+                      ],
+                    ),
+                    body: DataStrings(
+                        dataStringData: DataStringsData.create(
                             title: 'STEM',
                             questions: questions,
                             answers: answers,
-                          ));
-                        });
-                  }))
-        ],
-      ),
-    );
+                            bgImage: bgImage)));
+              });
+        });
   }
 }
