@@ -65,12 +65,14 @@ class _DataStringsPageState extends State<DataStringsPage> {
           return ValueListenableBuilder(
               valueListenable: Hive.box<Answer>('answerBox').listenable(),
               builder: (context, box, _) {
-                final answers = box.values
-                    .where((answer) =>
-                        selectedName ==
-                        '${answer.firstName} ${answer.lastName}')
-                    .map((answer) => answer.choices)
-                    .toList();
+                final answers = selectedName != null
+                    ? box.values
+                        .where((answer) =>
+                            selectedName ==
+                            '${answer.firstName} ${answer.lastName}')
+                        .map((answer) => answer.choices)
+                        .toList()
+                    : box.values.map((answer) => answer.choices).toList();
 
                 return Scaffold(
                     appBar: AppBar(
@@ -88,6 +90,7 @@ class _DataStringsPageState extends State<DataStringsPage> {
                                               child: DropdownMenu(
                                                   label: const Text('Name'),
                                                   controller: nameController,
+                                                  initialSelection: 'All',
                                                   onSelected: (value) {
                                                     setState(() {
                                                       selectedName = value;

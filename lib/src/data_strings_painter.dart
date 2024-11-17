@@ -8,6 +8,8 @@ class DataStringsPainter extends CustomPainter {
   final List<Question> questions;
   final List<List<int>> answers;
   final ui.Image? bgImage;
+  // 12 for tablet, 8 for phone
+  static const double fontSize = 12;
 
   DataStringsPainter({
     required this.title,
@@ -47,7 +49,7 @@ class DataStringsPainter extends CustomPainter {
       final questionSpan = TextSpan(
         text: questions[i].text,
         style: const TextStyle(
-          fontSize: 12,
+          fontSize: fontSize,
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
@@ -69,7 +71,7 @@ class DataStringsPainter extends CustomPainter {
         final choicePainter = TextSpan(
           text: questions[i].choices[j],
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: fontSize,
             color: Colors.black,
           ),
         );

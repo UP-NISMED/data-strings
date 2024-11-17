@@ -16,11 +16,12 @@ class MyHomePage extends StatelessWidget {
     return Container(
         decoration: const BoxDecoration(
             image: DecorationImage(
-                image: AssetImage('assets/home.png'), fit: BoxFit.fitWidth)),
+                image: AssetImage('assets/home.png'), fit: BoxFit.contain)),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               ElevatedButton(
                 onPressed: () {
