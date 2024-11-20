@@ -19,7 +19,9 @@ class DataStrings extends StatelessWidget {
           description: dataStringData.description,
           questions: dataStringData.questions,
           answers: dataStringData.answers,
-          bgImage: dataStringData.bgImage),
+          bgImage: dataStringData.bgImage,
+          shortestSide: MediaQuery.of(context).size.shortestSide,
+    )
     );
   }
 }

@@ -8,8 +8,7 @@ class DataStringsPainter extends CustomPainter {
   final List<Question> questions;
   final List<List<int>> answers;
   final ui.Image? bgImage;
-  // 12 for tablet, 8 for phone
-  static const double fontSize = 12;
+  final double shortestSide;
 
   DataStringsPainter({
     required this.title,
@@ -17,6 +16,7 @@ class DataStringsPainter extends CustomPainter {
     required this.questions,
     required this.answers,
     this.bgImage,
+    required this.shortestSide,
   });
 
   List<Offset> _computeQuestionPoints(
@@ -34,8 +34,8 @@ class DataStringsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (bgImage != null) {
-      final srcRect = Rect.fromLTWH(0, 0, bgImage!.width.toDouble(),
-          bgImage!.height.toDouble());
+      final srcRect = Rect.fromLTWH(
+          0, 0, bgImage!.width.toDouble(), bgImage!.height.toDouble());
       final destRect = Offset.zero & size;
       canvas.drawImageRect(bgImage!, srcRect, destRect, Paint());
     }
@@ -46,14 +46,27 @@ class DataStringsPainter extends CustomPainter {
     var x = columnWidth / 2;
     List<List<Offset>> questionPointList = [];
     for (var i = 0; i < questions.length; i++) {
-      final questionSpan = TextSpan(
-        text: questions[i].text,
-        style: const TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      );
+      TextSpan questionSpan;
+      if (shortestSide < 600) {
+        questionSpan = TextSpan(
+          text: questions[i].text,
+          style: const TextStyle(
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        );
+      } else {
+        questionSpan = TextSpan(
+          text: questions[i].text,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        );
+      }
+
       final questionPainter = TextPainter(
         text: questionSpan,
         textDirection: TextDirection.ltr,
@@ -67,16 +80,29 @@ class DataStringsPainter extends CustomPainter {
       questionPointList.add(questionPoints);
       // Draw question
       for (var j = 0; j < questions[i].choices.length; j++) {
-        //canvas.drawCircle(point, 2, Paint()..color = Colors.black);
-        final choicePainter = TextSpan(
-          text: questions[i].choices[j],
-          style: const TextStyle(
-            fontSize: fontSize,
-            color: Colors.black,
-          ),
-        );
+
+        TextSpan choiceSpan;
+        if (shortestSide < 600) {
+          choiceSpan = TextSpan(
+            text: questions[i].choices[j],
+            style: const TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          );
+        } else {
+          choiceSpan = TextSpan(
+            text: questions[i].choices[j],
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          );
+        }
         final choiceTextPainter = TextPainter(
-          text: choicePainter,
+          text: choiceSpan,
           textDirection: TextDirection.ltr,
           textAlign: TextAlign.center,
         );
@@ -95,7 +121,7 @@ class DataStringsPainter extends CustomPainter {
       for (var j = 0; j < questions.length - 1; j++) {
         final currentPoint = questionPointList[j][answers[i][j]];
         final nextPoint = questionPointList[j + 1][answers[i][j + 1]];
-        canvas.drawLine(currentPoint, nextPoint, Paint()..color = color);
+        canvas.drawLine(currentPoint, nextPoint, Paint()..color = color ..strokeWidth = 2.0);
       }
     }
   }
