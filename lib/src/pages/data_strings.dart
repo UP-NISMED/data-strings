@@ -20,7 +20,7 @@ class DataStringsPage extends StatefulWidget {
 }
 
 class _DataStringsPageState extends State<DataStringsPage> {
-  final AnswerService _answerService = AnswerService();
+  final AnswerService _answerService = getIt<AnswerService>();
   final TextEditingController nameController = TextEditingController();
   String? selectedName;
 
@@ -60,68 +60,110 @@ class _DataStringsPageState extends State<DataStringsPage> {
             return const Center(child: Text('Error loading image'));
           }
 
-          final [_, bgImage as ui.Image] = snapshot.data!;
+          final [answers as List<Answer>, bgImage as ui.Image] = snapshot.data!;
+          final choices = selectedName != null
+              ? answers
+                  .where((answer) =>
+                      selectedName == '${answer.firstName} ${answer.lastName}')
+                  .map((answer) => answer.choices)
+                  .toList()
+              : answers.map((answer) => answer.choices).toList();
 
-          return ValueListenableBuilder(
-              valueListenable: Hive.box<Answer>('answerBox').listenable(),
-              builder: (context, box, _) {
-                final answers = selectedName != null
-                    ? box.values
-                        .where((answer) =>
-                            selectedName ==
-                            '${answer.firstName} ${answer.lastName}')
-                        .map((answer) => answer.choices)
-                        .toList()
-                    : box.values.map((answer) => answer.choices).toList();
-
-                return Scaffold(
-                    appBar: AppBar(
-                      backgroundColor: const Color(0xFFE9C46A),
-                      actions: [
-                        IconButton(
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) =>
-                                      SimpleDialog(
-                                          title: const Text('Filter'),
-                                          children: [
-                                            SimpleDialogOption(
-                                              child: DropdownMenu(
-                                                  label: const Text('Name'),
-                                                  controller: nameController,
-                                                  initialSelection: 'All',
-                                                  onSelected: (value) {
-                                                    setState(() {
-                                                      selectedName = value;
-                                                    });
-                                                  },
-                                                  dropdownMenuEntries: [
-                                                    const DropdownMenuEntry(
-                                                        value: null,
-                                                        label: 'All'),
-                                                    ...box.values.map((answer) {
-                                                      final fullName =
-                                                          '${answer.firstName} ${answer.lastName}';
-                                                      return DropdownMenuEntry(
-                                                          value: fullName,
-                                                          label: fullName);
-                                                    })
-                                                  ]),
-                                            )
-                                          ]));
-                            },
-                            icon:
-                                const Icon(Icons.settings, color: Colors.white))
-                      ],
-                    ),
-                    body: DataStrings(
-                        dataStringData: DataStringsData.create(
-                            title: 'STEM',
-                            questions: questions,
-                            answers: answers,
-                            bgImage: bgImage)));
-              });
+          return Scaffold(
+              appBar: AppBar(
+                actions: [
+                  IconButton(
+                      disabledColor: Colors.grey,
+                      onPressed: _answerService.url != null
+                          ? () async {
+                              try {
+                                await _answerService.pushNewLocalAnswers();
+                              } catch (e) {
+                                _answerService.url = null;
+                              } finally {
+                                setState(() {});
+                              }
+                            }
+                          : null,
+                      icon: const Icon(Icons.upload, color: Colors.white)),
+                  IconButton(
+                      disabledColor: Colors.grey,
+                      onPressed: _answerService.url != null
+                          ? () async {
+                              try {
+                                await _answerService.pullNewRemoteAnswers();
+                              } catch (e) {
+                                _answerService.url = null;
+                              } finally {
+                                setState(() {});
+                              }
+                            }
+                          : null,
+                      icon: const Icon(Icons.download, color: Colors.white)),
+                  IconButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                                    title: const Text('Delete all answers?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () async {
+                                            await _answerService
+                                                .deleteAllAnswers();
+                                            Navigator.of(context).pop();
+                                            setState(() {});
+                                          },
+                                          child: const Text('Yes')),
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('No')),
+                                    ]));
+                      },
+                      icon: const Icon(Icons.delete, color: Colors.white)),
+                  IconButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) => SimpleDialog(
+                                    title: const Text('Filter'),
+                                    children: [
+                                      SimpleDialogOption(
+                                        child: DropdownMenu(
+                                            label: const Text('Name'),
+                                            controller: nameController,
+                                            initialSelection: 'All',
+                                            onSelected: (value) {
+                                              setState(() {
+                                                selectedName = value;
+                                              });
+                                            },
+                                            dropdownMenuEntries: [
+                                              const DropdownMenuEntry(
+                                                  value: null, label: 'All'),
+                                              ...answers.map((answer) {
+                                                final fullName =
+                                                    '${answer.firstName} ${answer.lastName}';
+                                                return DropdownMenuEntry(
+                                                    value: fullName,
+                                                    label: fullName);
+                                              })
+                                            ]),
+                                      )
+                                    ]));
+                      },
+                      icon: const Icon(Icons.settings, color: Colors.white)),
+                ],
+                backgroundColor: const Color(0xFFE9C46A),
+              ),
+              body: DataStrings(
+                  dataStringData: DataStringsData.create(
+                      title: 'STEM',
+                      questions: questions,
+                      answers: choices,
+                      bgImage: bgImage)));
         });
   }
 }

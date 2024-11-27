@@ -1,3 +1,5 @@
+import 'package:data_strings/main.dart';
+import 'package:data_strings/src/db/db.dart';
 import 'package:data_strings/src/pages/data_strings.dart';
 import 'package:data_strings/src/pages/profile.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,8 @@ class MyHomePage extends StatelessWidget {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    final answerService = getIt<AnswerService>();
+    String? error;
 
     return Container(
         decoration: const BoxDecoration(
@@ -47,7 +51,59 @@ class MyHomePage extends StatelessWidget {
                 child: const Text('View Answers'),
               ),
               const SizedBox(width: 10, height: 10),
-              ElevatedButton(onPressed: () {}, child: const Text('Settings'))
+              ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          final serverUrlController = TextEditingController(text: answerService.url);
+                          GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+                          return SimpleDialog(
+                            title: const Text('Settings'),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Form(
+                                    key: formKey,
+                                    child: Column(
+                                  children: [
+                                    TextFormField(
+                                      onChanged: (value) async {
+                                        if (value.isEmpty) {
+                                          error = 'Server URL is required';
+                                          return;
+                                        }
+
+                                        answerService.testUrl(value).then((value) {
+                                          error = null; 
+                                        }).catchError((e) {
+                                          error = e.toString();
+                                        });
+                                      },
+                                      validator: (value) => error,
+                                      controller: serverUrlController,
+                                      decoration: const InputDecoration(
+                                          labelText: 'Server URL'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        if (formKey.currentState!.validate()) {
+                                          answerService.url =
+                                              serverUrlController.text;
+                                          Navigator.pop(context);
+                                        }
+                                      },
+                                      child: const Text('Save'),
+                                    )
+                                  ],
+                                )),
+                              )
+                            ],
+                          );
+                        });
+                  },
+                  child: const Text('Settings'))
             ],
           ),
         ));

@@ -1,13 +1,17 @@
+import 'package:data_strings/src/db/db.dart';
 import 'package:data_strings/src/db/models/answer.dart';
 import 'package:data_strings/src/pages/home.dart';
 import 'package:data_strings/src/question.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+GetIt getIt = GetIt.instance;
 
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(AnswerAdapter());
+  getIt.registerSingleton<AnswerService>(AnswerService());
   runApp(const MyApp());
 }
 

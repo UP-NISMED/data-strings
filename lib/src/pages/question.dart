@@ -23,7 +23,7 @@ class QuestionPage extends StatefulWidget {
 
 class _QuestionPageState extends State<QuestionPage> {
   int? _selectedChoice;
-  final AnswerService _answerService = AnswerService();
+  final AnswerService _answerService = getIt<AnswerService>();
 
   @override
   Widget build(BuildContext context) {
