@@ -14,8 +14,6 @@ class MyHomePage extends StatelessWidget {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    final answerService = getIt<AnswerService>();
-    String? error;
 
     return Container(
         decoration: const BoxDecoration(
@@ -56,7 +54,6 @@ class MyHomePage extends StatelessWidget {
                     showDialog(
                         context: context,
                         builder: (context) {
-                          final serverUrlController = TextEditingController(text: answerService.url);
                           GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
                           return SimpleDialog(
@@ -67,37 +64,15 @@ class MyHomePage extends StatelessWidget {
                                 child: Form(
                                     key: formKey,
                                     child: Column(
-                                  children: [
-                                    TextFormField(
-                                      onChanged: (value) async {
-                                        if (value.isEmpty) {
-                                          error = 'Server URL is required';
-                                          return;
-                                        }
-
-                                        answerService.testUrl(value).then((value) {
-                                          error = null; 
-                                        }).catchError((e) {
-                                          error = e.toString();
-                                        });
-                                      },
-                                      validator: (value) => error,
-                                      controller: serverUrlController,
-                                      decoration: const InputDecoration(
-                                          labelText: 'Server URL'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        if (formKey.currentState!.validate()) {
-                                          answerService.url =
-                                              serverUrlController.text;
-                                          Navigator.pop(context);
-                                        }
-                                      },
-                                      child: const Text('Save'),
-                                    )
-                                  ],
-                                )),
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Save'),
+                                        )
+                                      ],
+                                    )),
                               )
                             ],
                           );
